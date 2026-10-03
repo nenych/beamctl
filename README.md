@@ -2,7 +2,7 @@
 
 Command-line control for the Logitech Litra Beam LX light: front light, back RGB light and presets.
 
-Works on macOS over Bluetooth (`046D:B903`) and USB (`046D:C903`); USB is preferred when the light is reachable both ways. The USB path has not been tested on a real cable yet.
+Works on macOS over Bluetooth (`046D:B903`) and USB (`046D:C903`); USB is preferred when the light is reachable both ways.
 
 ## Install
 
@@ -54,6 +54,8 @@ go vet ./... && go test ./...
 ```
 
 The protocol is Logitech HID++ 2.0 in 20-byte reports (`litra.go`); the transport is IOKit via cgo (`hid_darwin.go`).
+
+Contributions are welcome, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Acknowledgements
 

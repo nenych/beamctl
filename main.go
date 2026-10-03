@@ -18,7 +18,7 @@ const usage = `usage:
   beamctl back on | off | toggle
   beamctl back brightness <1-100 | +N | -N>  percent
   beamctl back color <RRGGBB>
-  beamctl back pick                          choose in the macOS colour picker, turns the back light on
+  beamctl back pick                          choose in the system colour picker, turns the back light on
   beamctl preset [name]                      from ~/.config/beamctl/presets.json
 `
 

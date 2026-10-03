@@ -4,12 +4,14 @@ Bug reports, fixes and new features are welcome. For anything larger than a smal
 
 ## Development
 
-Requires macOS, Go 1.26 or newer and the Xcode Command Line Tools (the transport uses cgo).
+Requires Go 1.26 or newer. On macOS you also need the Xcode Command Line Tools (the transport uses cgo); on Windows nothing else.
 
 ```
 go vet ./... && go test ./...
 go build -o ~/.local/bin/beamctl .
 ```
+
+Both platforms can be checked from either one: `GOOS=windows go vet ./...` compiles the Windows files on macOS.
 
 The unit tests cover the protocol (report bytes, reply parsing, value mapping) and run without a light. Anything that touches the transport or adds a command has to be tried on a real Litra Beam LX light: say in the pull request what you tested and whether it was over Bluetooth, USB or both.
 
@@ -20,9 +22,10 @@ The unit tests cover the protocol (report bytes, reply parsing, value mapping) a
 | `main.go` | argument parsing and commands |
 | `litra.go` | HID++ reports, reply parsing, value mapping |
 | `presets.go` | `~/.config/beamctl/presets.json` |
-| `hid_darwin.go` | macOS transport (IOKit via cgo) |
+| `hid_darwin.go`, `hid_windows.go` | transport: IOKit via cgo on macOS, the HID API through `syscall` on Windows |
+| `picker_darwin.go`, `picker_windows.go` | the system colour picker behind `back pick` |
 
-Platform-specific code goes in files with a `_<os>.go` suffix. Windows support would be a `hid_windows.go` providing the same `request` function, plus a colour picker for `back pick`.
+Platform-specific code goes in files with a `_<os>.go` suffix; each platform provides the same `request` and `pickColor` functions.
 
 ## Guidelines
 
@@ -35,7 +38,7 @@ Platform-specific code goes in files with a `_<os>.go` suffix. Windows support w
 
 ## Reporting a bug
 
-Please include your macOS version, how the light is connected (Bluetooth or USB), the command you ran and its full output.
+Please include your operating system and its version, how the light is connected (Bluetooth or USB), the command you ran and its full output. On Windows, run it with `BEAMCTL_DEBUG=1` set.
 
 ## Conduct and licence
 

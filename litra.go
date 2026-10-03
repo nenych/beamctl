@@ -1,9 +1,7 @@
 package main
 
 import (
-	"errors"
 	"fmt"
-	"os/exec"
 	"strconv"
 	"strings"
 )
@@ -46,6 +44,17 @@ func report(feature, function byte, params ...byte) []byte {
 	r[0], r[1], r[2], r[3] = 0x11, 0xff, feature, function
 	copy(r[4:], params)
 	return r
+}
+
+// isReplyTo reports whether the input report answers the request out: either
+// an echo of its feature and function bytes or a HID++ error naming them.
+func isReplyTo(out, in []byte) bool {
+	if len(in) < reportLen || in[0] != 0x11 {
+		return false
+	}
+	echo := in[2] == out[2] && in[3] == out[3]
+	failed := in[2] == 0xff && in[3] == out[2] && in[4] == out[3]
+	return echo || failed
 }
 
 // hidppError decodes an error reply: 11 ff ff <feature> <function> <code>.
@@ -132,31 +141,6 @@ func parseColor(s string) (r, g, b byte, err error) {
 		return 0, 0, 0, fmt.Errorf("invalid colour %q, want RRGGBB", s)
 	}
 	return byte(n >> 16), byte(n >> 8), byte(n), nil
-}
-
-// parsePicked decodes the result of osascript's "choose color": three 16-bit channels.
-func parsePicked(out string) (r, g, b byte, err error) {
-	var r16, g16, b16 uint16
-	if _, err := fmt.Sscanf(out, "%d, %d, %d", &r16, &g16, &b16); err != nil {
-		return 0, 0, 0, fmt.Errorf("unexpected colour picker output %q", out)
-	}
-	return byte(r16 >> 8), byte(g16 >> 8), byte(b16 >> 8), nil
-}
-
-// pickColor shows the macOS colour picker; ok is false when it was cancelled.
-// It starts from white: the default is black, which puts the brightness
-// slider at zero and renders the whole colour wheel black.
-func pickColor() (r, g, b byte, ok bool, err error) {
-	out, err := exec.Command("osascript", "-e", "choose color default color {65535, 65535, 65535}").Output()
-	var exit *exec.ExitError
-	if errors.As(err, &exit) && strings.Contains(string(exit.Stderr), "-128") {
-		return 0, 0, 0, false, nil
-	}
-	if err != nil {
-		return 0, 0, 0, false, err
-	}
-	r, g, b, err = parsePicked(string(out))
-	return r, g, b, err == nil, err
 }
 
 // zoneReport sets one back zone. A zero channel can hang the light, so each is at least 1.

@@ -104,13 +104,25 @@ func TestResolve(t *testing.T) {
 	}
 }
 
-func TestParsePicked(t *testing.T) {
-	r, g, b, err := parsePicked("65535, 27242, 0\n")
-	if err != nil || r != 0xff || g != 0x6a || b != 0x00 {
-		t.Errorf("parsePicked = %02x %02x %02x, %v", r, g, b, err)
+func TestIsReplyTo(t *testing.T) {
+	out := report(featFront, fnFrontGetBrightness)
+	tests := []struct {
+		name string
+		in   []byte
+		want bool
+	}{
+		{"echo of feature and function", unhex(t, "11 ff 06 31 00 c8"), true},
+		{"HID++ error naming the request", unhex(t, "11 ff ff 06 31 02"), true},
+		{"reply to another function", unhex(t, "11 ff 06 81 10 68"), false},
+		{"reply to another feature", unhex(t, "11 ff 0a 31 00 32"), false},
+		{"error for another request", unhex(t, "11 ff ff 06 4c 02"), false},
+		{"another report id", unhex(t, "01 ff 06 31 00 c8"), false},
+		{"short report", []byte{0x11, 0xff, 0x06, 0x31}, false},
 	}
-	if _, _, _, err := parsePicked(""); err == nil {
-		t.Error("parsePicked of empty output: got nil error")
+	for _, tt := range tests {
+		if got := isReplyTo(out, tt.in); got != tt.want {
+			t.Errorf("%s: got %v, want %v", tt.name, got, tt.want)
+		}
 	}
 }
 

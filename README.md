@@ -2,21 +2,34 @@
 
 Command-line control for the Logitech Litra Beam LX light: front light, back RGB light and presets.
 
-Works on macOS and Windows, over Bluetooth (`046D:B903`) and USB (`046D:C903`); USB is preferred when the light is reachable both ways.
+Works on macOS, Windows and Linux, over Bluetooth (`046D:B903`) and USB (`046D:C903`); USB is preferred when the light is reachable both ways. On Linux it has been tested over USB; Bluetooth there has not been tried yet.
 
 ## Install
 
-**macOS** needs Go and the Xcode Command Line Tools. **Windows** needs only Go.
+**macOS** needs Go and the Xcode Command Line Tools. **Windows** and **Linux** need only Go.
 
 ```
 go install github.com/nenych/beamctl@latest
 ```
 
-puts the binary in `~/go/bin` (`%USERPROFILE%\go\bin` on Windows). Or, from a clone on macOS:
+puts the binary in `~/go/bin` (`%USERPROFILE%\go\bin` on Windows). Or, from a clone on macOS or Linux:
 
 ```
 go build -o ~/.local/bin/beamctl .
 ```
+
+### Linux: access to the light
+
+By default only root may open the light's `/dev/hidraw*` node. Install the udev rule from this repository once, then reconnect the light (unplug the cable, or disconnect and reconnect Bluetooth):
+
+```
+sudo cp 70-beamctl.rules /etc/udev/rules.d/
+sudo udevadm control --reload && sudo udevadm trigger
+```
+
+The rule gives access to whoever is logged in at the machine itself, on its desktop or console. It does nothing for a remote login over SSH, a service or a cron job: for those, uncomment the two group lines at the end of the rule file before installing it, as described there.
+
+`beamctl back pick` uses `zenity` or `kdialog` for its colour dialog; without either, use `beamctl back color RRGGBB`.
 
 Frontends (such as `beamctl-mx-ring`) run in environments without your shell's `PATH`, so they look for the binary in `~/.local/bin`, `/opt/homebrew/bin`, `/usr/local/bin` and `~/go/bin`, in that order, and only then on `PATH`. Install it in one of those.
 
@@ -47,16 +60,20 @@ beamctl preset [name]                      without a name, lists presets one per
 }
 ```
 
-## Troubleshooting on Windows
+## Troubleshooting on Windows and Linux
 
-Set `BEAMCTL_DEBUG=1` to see which Logitech HID devices were found and which one was chosen:
+Set `BEAMCTL_DEBUG=1` to see which Logitech HID devices were found and which one was chosen. On Linux:
 
 ```
-set BEAMCTL_DEBUG=1
+BEAMCTL_DEBUG=1 beamctl status
+```
+
+On Windows, in PowerShell (in `cmd` the first line is `set BEAMCTL_DEBUG=1`):
+
+```
+$env:BEAMCTL_DEBUG=1
 beamctl status
 ```
-
-In PowerShell the first line is `$env:BEAMCTL_DEBUG=1`.
 
 ## Development
 
@@ -64,7 +81,7 @@ In PowerShell the first line is `$env:BEAMCTL_DEBUG=1`.
 go vet ./... && go test ./...
 ```
 
-The protocol is Logitech HID++ 2.0 in 20-byte reports (`litra.go`). The transport is IOKit via cgo on macOS (`hid_darwin.go`) and the Windows HID API on Windows (`hid_windows.go`).
+The protocol is Logitech HID++ 2.0 in 20-byte reports (`litra.go`). The transport is IOKit via cgo on macOS (`hid_darwin.go`), the Windows HID API on Windows (`hid_windows.go`) and hidraw on Linux (`hid_linux.go`).
 
 Contributions are welcome, see [CONTRIBUTING.md](CONTRIBUTING.md).
 

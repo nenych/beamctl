@@ -1,0 +1,19 @@
+# Lets a user talk to a Logitech Litra Beam LX light without root.
+# Install: copy to /etc/udev/rules.d/, then run
+#   sudo udevadm control --reload && sudo udevadm trigger
+# and reconnect the light (unplug the cable, or disconnect Bluetooth). The
+# reconnect matters after changing this file: permissions are only set in full
+# when the device node is created.
+
+# Access for whoever is logged in at the machine itself (desktop or console).
+# USB
+KERNEL=="hidraw*", KERNELS=="0003:046D:C903.*", TAG+="uaccess"
+# Bluetooth
+KERNEL=="hidraw*", KERNELS=="0005:046D:B903.*", TAG+="uaccess"
+
+# The lines above do nothing for a remote login (SSH), a service or a cron job.
+# For those, uncomment the two lines below to give access to a group instead,
+# and make sure the user is in it. "plugdev" exists on Debian and Ubuntu, where
+# desktop users are members already; elsewhere pick a group that exists.
+#KERNEL=="hidraw*", KERNELS=="0003:046D:C903.*", MODE="0660", GROUP="plugdev"
+#KERNEL=="hidraw*", KERNELS=="0005:046D:B903.*", MODE="0660", GROUP="plugdev"

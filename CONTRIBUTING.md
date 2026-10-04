@@ -4,14 +4,18 @@ Bug reports, fixes and new features are welcome. For anything larger than a smal
 
 ## Development
 
-Requires Go 1.26 or newer. On macOS you also need the Xcode Command Line Tools (the transport uses cgo); on Windows nothing else.
+Requires Go 1.24 or newer; an older Go, from 1.21 on, downloads the right toolchain by itself. On macOS you also need the Xcode Command Line Tools (the transport uses cgo); on Windows and Linux nothing else.
 
 ```
 go vet ./... && go test ./...
 go build -o ~/.local/bin/beamctl .
 ```
 
-Both platforms can be checked from either one: `GOOS=windows go vet ./...` compiles the Windows files on macOS.
+Every platform can be checked from any other: `GOOS=windows go vet ./...` and `GOOS=linux go vet ./...` compile the other platforms' files. The Linux transport has tests of its own, which run only on Linux; from macOS or Windows use Docker:
+
+```
+docker run --rm -v "$PWD":/src:ro -w /src -e GOFLAGS=-buildvcs=false golang:1.26 go test ./...
+```
 
 The unit tests cover the protocol (report bytes, reply parsing, value mapping) and run without a light. Anything that touches the transport or adds a command has to be tried on a real Litra Beam LX light: say in the pull request what you tested and whether it was over Bluetooth, USB or both.
 
@@ -22,8 +26,9 @@ The unit tests cover the protocol (report bytes, reply parsing, value mapping) a
 | `main.go` | argument parsing and commands |
 | `litra.go` | HID++ reports, reply parsing, value mapping |
 | `presets.go` | `~/.config/beamctl/presets.json` |
-| `hid_darwin.go`, `hid_windows.go` | transport: IOKit via cgo on macOS, the HID API through `syscall` on Windows |
-| `picker_darwin.go`, `picker_windows.go` | the system colour picker behind `back pick` |
+| `hid_darwin.go`, `hid_windows.go`, `hid_linux.go` | transport: IOKit via cgo on macOS, the HID API through `syscall` on Windows, hidraw on Linux |
+| `picker_darwin.go`, `picker_windows.go`, `picker_linux.go` | the colour picker behind `back pick` |
+| `70-beamctl.rules` | udev rule that gives the logged-in user access to the light on Linux |
 
 Platform-specific code goes in files with a `_<os>.go` suffix; each platform provides the same `request` and `pickColor` functions.
 

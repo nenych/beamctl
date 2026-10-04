@@ -2,7 +2,7 @@
 
 Command-line control for the Logitech Litra Beam LX light: front light, back RGB light and presets.
 
-Works on macOS and Windows, over Bluetooth (`046D:B903`) and USB (`046D:C903`); USB is preferred when the light is reachable both ways. Windows support is new and has not been tried on a real machine yet.
+Works on macOS and Windows, over Bluetooth (`046D:B903`) and USB (`046D:C903`); USB is preferred when the light is reachable both ways.
 
 ## Install
 

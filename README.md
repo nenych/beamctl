@@ -1,8 +1,25 @@
 # beamctl
 
-Command-line control for the Logitech Litra Beam LX light: front light, back RGB light and presets.
+A command-line (CLI) tool for controlling a Logitech Litra Beam LX light from the terminal on macOS, Windows and Linux, over Bluetooth or USB. It switches the front light on and off, sets its brightness and colour temperature, controls the RGB backlight and applies saved presets.
 
-Works on macOS, Windows and Linux, over Bluetooth (`046D:B903`) and USB (`046D:C903`); USB is preferred when the light is reachable both ways. On Linux it has been tested over USB; Bluetooth there has not been tried yet.
+```
+beamctl on
+beamctl brightness 60
+beamctl temp 4500
+beamctl back color ff6a00
+```
+
+beamctl is an independent open-source project and is not made by Logitech.
+
+## Platforms
+
+| | USB | Bluetooth |
+|---|---|---|
+| macOS | tested | tested |
+| Windows | tested | tested |
+| Linux | tested | not tried yet |
+
+The light is `046D:C903` over USB and `046D:B903` over Bluetooth. When it is reachable both ways, USB is used.
 
 ## Install
 
@@ -18,6 +35,8 @@ puts the binary in `~/go/bin` (`%USERPROFILE%\go\bin` on Windows). Or, from a cl
 go build -o ~/.local/bin/beamctl .
 ```
 
+Frontends such as [beamctl-mx-ring](https://github.com/nenych/beamctl-mx-ring) run in environments without your shell's `PATH`, so they look for the binary in `~/.local/bin`, `/opt/homebrew/bin`, `/usr/local/bin` and `~/go/bin`, in that order, and only then on `PATH`. Install it in one of those.
+
 ### Linux: access to the light
 
 By default only root may open the light's `/dev/hidraw*` node. Install the udev rule from this repository once, then reconnect the light (unplug the cable, or disconnect and reconnect Bluetooth):
@@ -30,8 +49,6 @@ sudo udevadm control --reload && sudo udevadm trigger
 The rule gives access to whoever is logged in at the machine itself, on its desktop or console. It does nothing for a remote login over SSH, a service or a cron job: for those, uncomment the two group lines at the end of the rule file before installing it, as described there.
 
 `beamctl back pick` uses `zenity` or `kdialog` for its colour dialog; without either, use `beamctl back color RRGGBB`.
-
-Frontends (such as `beamctl-mx-ring`) run in environments without your shell's `PATH`, so they look for the binary in `~/.local/bin`, `/opt/homebrew/bin`, `/usr/local/bin` and `~/go/bin`, in that order, and only then on `PATH`. Install it in one of those.
 
 ## Usage
 
@@ -47,7 +64,7 @@ beamctl back pick                          choose in the system colour picker, t
 beamctl preset [name]                      without a name, lists presets one per line
 ```
 
-`+N` / `-N` change the current value. Exit status is 0 on success, 1 on a failure (message on stderr), 2 on a usage error.
+`back` is the RGB backlight. `+N` / `-N` change the current value. Exit status is 0 on success, 1 on a failure (message on stderr), 2 on a usage error.
 
 ## Presets
 
@@ -74,6 +91,10 @@ On Windows, in PowerShell (in `cmd` the first line is `set BEAMCTL_DEBUG=1`):
 $env:BEAMCTL_DEBUG=1
 beamctl status
 ```
+
+## Related projects
+
+- [beamctl-mx-ring](https://github.com/nenych/beamctl-mx-ring) puts these controls into the Actions Ring of a Logitech MX Master 4: a Logi Options+ plugin for macOS and Windows that runs beamctl for every action.
 
 ## Development
 

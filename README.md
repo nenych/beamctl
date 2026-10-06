@@ -9,6 +9,8 @@ beamctl temp 4500
 beamctl back color ff6a00
 ```
 
+![beamctl demo](docs/beamctl-demo.gif)
+
 beamctl is an independent open-source project and is not made by Logitech.
 
 ## Platforms

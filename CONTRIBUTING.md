@@ -41,6 +41,10 @@ Platform-specific code goes in files with a `_<os>.go` suffix; each platform pro
 - Frontends run the CLI and read its output, so do not change existing commands, output or exit codes without discussion.
 - Project, binary and package names must not contain Logitech trademarks; refer to the light descriptively.
 
+## Releasing
+
+Push a tag like `v1.2.3`. The `Release` workflow tests, builds the archives for macOS, Linux and Windows with `scripts/build-release.sh`, publishes a GitHub release with `checksums.txt`, and points the formula in [nenych/homebrew-tap](https://github.com/nenych/homebrew-tap) at the tag (`scripts/update-tap.sh`, which needs the `HOMEBREW_TAP_TOKEN` secret; without it, update the formula by hand). Running the workflow by hand builds the archives without publishing anything.
+
 ## Reporting a bug
 
 Please include your operating system and its version, how the light is connected (Bluetooth or USB), the command you ran and its full output. On Windows, run it with `BEAMCTL_DEBUG=1` set.

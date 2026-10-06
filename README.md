@@ -23,17 +23,29 @@ The light is `046D:C903` over USB and `046D:B903` over Bluetooth. When it is rea
 
 ## Install
 
-**macOS** needs Go and the Xcode Command Line Tools. **Windows** and **Linux** need only Go.
+**Homebrew** on macOS or Linux:
+
+```
+brew install nenych/tap/beamctl
+```
+
+**Script** on macOS or Linux: downloads the [latest release](https://github.com/nenych/beamctl/releases/latest) into `~/.local/bin` after checking its SHA-256. Read it first if you like (`curl -fsSL … | less`).
+
+```
+curl -fsSL https://raw.githubusercontent.com/nenych/beamctl/main/install.sh | sh
+```
+
+**Windows:** unzip `beamctl_windows_amd64.zip` (or `arm64`) from the latest release and put `beamctl.exe` in a folder on your `PATH`, for example `%USERPROFILE%\.local\bin`.
+
+**From source** with Go (on macOS also the Xcode Command Line Tools):
 
 ```
 go install github.com/nenych/beamctl@latest
 ```
 
-puts the binary in `~/go/bin` (`%USERPROFILE%\go\bin` on Windows). Or, from a clone on macOS or Linux:
+puts the binary in `~/go/bin` (`%USERPROFILE%\go\bin` on Windows); from a clone, `go build -o ~/.local/bin/beamctl .`
 
-```
-go build -o ~/.local/bin/beamctl .
-```
+The macOS release binaries are not signed by Apple, so one downloaded with a browser is blocked by Gatekeeper. Homebrew, the script and `go install` do not have that problem.
 
 Frontends such as [beamctl-mx-ring](https://github.com/nenych/beamctl-mx-ring) run in environments without your shell's `PATH`, so they look for the binary in `~/.local/bin`, `/opt/homebrew/bin`, `/usr/local/bin` and `~/go/bin`, in that order, and only then on `PATH`. Install it in one of those.
 

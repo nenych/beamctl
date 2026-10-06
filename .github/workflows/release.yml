@@ -1,0 +1,60 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch: # builds the archives without publishing, to check the pipeline
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    # macOS because the macOS builds need cgo; the others are cross-compiled.
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Test
+        run: go vet ./... && go test ./...
+
+      - name: Build
+        run: scripts/build-release.sh "$GITHUB_REF_NAME"
+
+      - name: Keep the archives for inspection
+        if: github.ref_type != 'tag'
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: |
+            dist/*.tar.gz
+            dist/*.zip
+            dist/checksums.txt
+
+      - name: Publish the release
+        if: github.ref_type == 'tag'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          {
+            cat .github/release-notes.md
+            echo
+            gh api "repos/$GITHUB_REPOSITORY/releases/generate-notes" -f tag_name="$GITHUB_REF_NAME" --jq .body
+          } > notes.md
+          gh release create "$GITHUB_REF_NAME" --title "beamctl $GITHUB_REF_NAME" --notes-file notes.md \
+            dist/*.tar.gz dist/*.zip dist/checksums.txt
+
+      - name: Update the Homebrew formula
+        if: github.ref_type == 'tag'
+        env:
+          HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+        run: |
+          if [ -z "$HOMEBREW_TAP_TOKEN" ]; then
+            echo "HOMEBREW_TAP_TOKEN is not set; update nenych/homebrew-tap by hand"
+            exit 0
+          fi
+          scripts/update-tap.sh "$GITHUB_REF_NAME"

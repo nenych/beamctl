@@ -20,7 +20,11 @@ const usage = `usage:
   beamctl back color <RRGGBB>
   beamctl back pick                          choose in the system colour picker, turns the back light on
   beamctl preset [name]                      from ~/.config/beamctl/presets.json
+  beamctl version
 `
+
+// Set by release builds with -ldflags "-X main.version=...".
+var version = "dev"
 
 var errUsage = errors.New("usage")
 
@@ -45,6 +49,9 @@ func run(args []string) error {
 	}
 	cmd, rest := args[0], args[1:]
 	switch {
+	case cmd == "version" && len(rest) == 0:
+		fmt.Println("beamctl", version)
+		return nil
 	case cmd == "status" && len(rest) == 0:
 		return status()
 	case isPower(cmd) && len(rest) == 0:
